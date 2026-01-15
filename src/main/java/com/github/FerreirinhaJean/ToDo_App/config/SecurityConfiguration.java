@@ -20,10 +20,11 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizer -> {
                     authorizer.requestMatchers(HttpMethod.POST, "/auth/register").permitAll();
+                    authorizer.anyRequest().authenticated();
                 })
+                .formLogin(form -> form.loginPage("/login").permitAll())
                 .build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
