@@ -254,6 +254,7 @@ com.seuprojeto.todo
 | Acesso negado          | 403  |
 | Recurso nao encontrado | 404  |
 | Regra de negocio       | 409  |
+| Erro na entidade       | 422  |
 
 ### Exemplo de resposta
 ```json

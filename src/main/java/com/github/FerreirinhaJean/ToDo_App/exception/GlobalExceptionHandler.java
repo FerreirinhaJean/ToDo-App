@@ -40,6 +40,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponseDTO handlerBusinessException(BusinessException exception) {
+        return new ErrorResponseDTO(
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                List.of()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponseDTO handlerException(Exception exception) {

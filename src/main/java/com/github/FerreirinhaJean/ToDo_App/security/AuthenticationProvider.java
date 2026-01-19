@@ -21,10 +21,11 @@ public class AuthenticationProvider implements UserDetailsService {
         if (user == null)
             throw new UsernameNotFoundException("email and/or password is incorrect.");
 
-        return org.springframework.security.core.userdetails.User
-                .builder()
-                .username(user.getName())
-                .password(user.getPassword())
-                .build();
+        return new UserPrincipal(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getPassword()
+        );
     }
 }

@@ -1,5 +1,7 @@
 package com.github.FerreirinhaJean.ToDo_App.config;
 
+import com.github.FerreirinhaJean.ToDo_App.security.JwtAuthConverter;
+import com.github.FerreirinhaJean.ToDo_App.security.UserPrincipal;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -12,9 +14,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
@@ -41,7 +46,10 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain defaultSecurityFilterChain(
+            HttpSecurity httpSecurity,
+            JwtAuthConverter jwtAuthConverter
+    ) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizer -> {
@@ -49,7 +57,11 @@ public class SecurityConfiguration {
                     authorizer.anyRequest().authenticated();
                 })
                 .formLogin(form -> form.loginPage("/login").permitAll())
-                .oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(
+                        resourceServer ->
+                                resourceServer.jwt(
+                                        jwtConfigurer ->
+                                                jwtConfigurer.jwtAuthenticationConverter(jwtAuthConverter)))
                 .build();
     }
 
@@ -64,5 +76,17 @@ public class SecurityConfiguration {
         return new JdbcRegisteredClientRepository(jdbcTemplate);
     }
 
+    @Bean
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
+        return context -> {
+            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
+                UserPrincipal userPrincipal = (UserPrincipal) context.getPrincipal().getPrincipal();
+
+                context.getClaims().claim("email", userPrincipal.getEmail());
+                context.getClaims().subject(userPrincipal.getId().toString());
+                context.getClaims().claim("name", userPrincipal.getName());
+            }
+        };
+    }
 
 }
