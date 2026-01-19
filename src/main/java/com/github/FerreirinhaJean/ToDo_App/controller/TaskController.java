@@ -28,7 +28,7 @@ public class TaskController {
             @RequestBody @Valid TaskCreationRequestDTO taskCreationRequestDTO,
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        Task task = taskService.create(taskCreationRequestDTO, userPrincipal.getEmail());
+        Task task = taskService.create(taskCreationRequestDTO, userPrincipal.getId());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -53,7 +53,7 @@ public class TaskController {
             @RequestParam(name = "status", required = false) String status,
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        Page<Task> tasks = taskService.search(page, size, status, userPrincipal.getEmail());
+        Page<Task> tasks = taskService.search(page, size, status, userPrincipal.getId());
 
         Page<TaskResponseDTO> responseDTO = tasks.map(
                 task -> new TaskResponseDTO(task.getId(), task.getTitle(), task.getDescription(), task.getStatus()));
@@ -66,15 +66,74 @@ public class TaskController {
             @PathVariable(name = "id") String id,
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        Task task = taskService.findById(id).orElse(null);
-        if (task == null)
-            return ResponseEntity.notFound().build();
+        Task task = taskService.findById(id, userPrincipal.getId()).orElse(null);
 
-        if (!task.getUser().getId().equals(userPrincipal.getId()))
+        if (task == null)
             return ResponseEntity.notFound().build();
 
         taskService.complete(task);
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<TaskResponseDTO> findById(
+            @PathVariable(name = "id") String id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        Task task = taskService.findById(id, userPrincipal.getId()).orElse(null);
+
+        if (task == null)
+            return ResponseEntity.notFound().build();
+
+        TaskResponseDTO responseDTO = new TaskResponseDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus()
+        );
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable(name = "id") String id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        Task task = taskService.findById(id, userPrincipal.getId()).orElse(null);
+
+        if (task == null)
+            return ResponseEntity.notFound().build();
+
+        taskService.delete(task);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskResponseDTO> update(
+            @PathVariable(name = "id") String id,
+            @RequestBody @Valid TaskCreationRequestDTO taskCreationRequestDTO,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        Task task = taskService.findById(id, userPrincipal.getId()).orElse(null);
+
+        if (task == null)
+            return ResponseEntity.notFound().build();
+
+        task.setTitle(taskCreationRequestDTO.title());
+        task.setDescription(taskCreationRequestDTO.description());
+
+        task = taskService.update(task);
+
+        TaskResponseDTO responseDTO = new TaskResponseDTO(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus()
+        );
+
+        return ResponseEntity.ok(responseDTO);
+    }
 }
