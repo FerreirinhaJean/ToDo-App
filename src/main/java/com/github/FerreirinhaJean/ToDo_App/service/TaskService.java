@@ -1,6 +1,6 @@
 package com.github.FerreirinhaJean.ToDo_App.service;
 
-import com.github.FerreirinhaJean.ToDo_App.dto.request.TaskCreationRequestDTO;
+import com.github.FerreirinhaJean.ToDo_App.dto.request.TaskRequestDTO;
 import com.github.FerreirinhaJean.ToDo_App.entity.Task;
 import com.github.FerreirinhaJean.ToDo_App.entity.User;
 import com.github.FerreirinhaJean.ToDo_App.entity.enums.TaskStatus;
@@ -23,13 +23,13 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
 
-    public Task create(TaskCreationRequestDTO taskCreationRequestDTO, UUID userId) {
+    public Task create(TaskRequestDTO taskRequestDTO, UUID userId) {
         User user = userService.findById(userId).orElse(null);
 
         Task task = new Task();
-        task.setTitle(taskCreationRequestDTO.title());
+        task.setTitle(taskRequestDTO.title());
 
-        task.setDescription(formatDescription(taskCreationRequestDTO.description()));
+        task.setDescription(formatDescription(taskRequestDTO.description()));
         task.setStatus(TaskStatus.PENDING);
         task.setUser(user);
 
@@ -80,7 +80,7 @@ public class TaskService {
     }
 
     private String formatDescription(String description) {
-        return !description.trim().isEmpty() ? description : null;
+        return description != null && !description.trim().isEmpty() ? description : null;
     }
 
 }
