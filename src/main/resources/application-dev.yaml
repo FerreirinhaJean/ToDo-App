@@ -1,6 +1,7 @@
 spring:
   application:
     name: ToDo-App
+    base-url: http://localhost:8080
   datasource:
     url: jdbc:postgresql://localhost:5432/todo-app
     username: admin
@@ -23,3 +24,8 @@ logging:
             sql: DEBUG
       springframework:
         security: DEBUG
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: client-swagger
+      use-pkce-with-authorization-code-grant: true
