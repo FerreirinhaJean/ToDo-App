@@ -4,6 +4,8 @@ import com.github.FerreirinhaJean.ToDo_App.dto.request.UserRequestDTO;
 import com.github.FerreirinhaJean.ToDo_App.dto.response.UserResponseDTO;
 import com.github.FerreirinhaJean.ToDo_App.entity.User;
 import com.github.FerreirinhaJean.ToDo_App.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +20,16 @@ import java.net.URI;
 @RestController
 @RequestMapping("/auth")
 @AllArgsConstructor
+@Tag(name = "Users")
 public class AuthController {
 
     private final UserService userService;
 
     @PostMapping("/register")
+    @Operation(
+            summary = "Register",
+            description = "Register new users"
+    )
     public ResponseEntity<UserResponseDTO> register(
             @RequestBody @Valid UserRequestDTO userRequestDTO
     ) {

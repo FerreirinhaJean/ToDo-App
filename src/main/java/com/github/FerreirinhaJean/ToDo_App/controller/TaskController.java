@@ -1,10 +1,12 @@
 package com.github.FerreirinhaJean.ToDo_App.controller;
 
-import com.github.FerreirinhaJean.ToDo_App.dto.request.TaskCreationRequestDTO;
+import com.github.FerreirinhaJean.ToDo_App.dto.request.TaskRequestDTO;
 import com.github.FerreirinhaJean.ToDo_App.dto.response.TaskResponseDTO;
 import com.github.FerreirinhaJean.ToDo_App.entity.Task;
 import com.github.FerreirinhaJean.ToDo_App.security.UserPrincipal;
 import com.github.FerreirinhaJean.ToDo_App.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,17 +20,21 @@ import java.net.URI;
 @RestController
 @RequestMapping("/tasks")
 @AllArgsConstructor
+@Tag(name = "Tasks")
 public class TaskController {
 
     private final TaskService taskService;
 
-
     @PostMapping
+    @Operation(
+            summary = "Create",
+            description = "Create a new task"
+    )
     public ResponseEntity<TaskResponseDTO> create(
-            @RequestBody @Valid TaskCreationRequestDTO taskCreationRequestDTO,
+            @RequestBody @Valid TaskRequestDTO taskRequestDTO,
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        Task task = taskService.create(taskCreationRequestDTO, userPrincipal.getId());
+        Task task = taskService.create(taskRequestDTO, userPrincipal.getId());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -47,6 +53,10 @@ public class TaskController {
     }
 
     @GetMapping
+    @Operation(
+            summary = "List",
+            description = "List tasks from user"
+    )
     public ResponseEntity<Page<TaskResponseDTO>> list(
             @RequestParam(name = "size", required = false, defaultValue = "10") Integer size,
             @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
@@ -62,6 +72,10 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/complete")
+    @Operation(
+            summary = "Complete",
+            description = "Complete task"
+    )
     public ResponseEntity<Void> completeTask(
             @PathVariable(name = "id") String id,
             @AuthenticationPrincipal UserPrincipal userPrincipal
@@ -76,6 +90,10 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
+    @Operation(
+            summary = "Get by Id",
+            description = "Get task by Id"
+    )
     public ResponseEntity<TaskResponseDTO> findById(
             @PathVariable(name = "id") String id,
             @AuthenticationPrincipal UserPrincipal userPrincipal
@@ -97,6 +115,10 @@ public class TaskController {
 
 
     @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Delete",
+            description = "Delete task"
+    )
     public ResponseEntity<Void> delete(
             @PathVariable(name = "id") String id,
             @AuthenticationPrincipal UserPrincipal userPrincipal
@@ -112,9 +134,13 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
+    @Operation(
+            summary = "Update",
+            description = "Update task"
+    )
     public ResponseEntity<TaskResponseDTO> update(
             @PathVariable(name = "id") String id,
-            @RequestBody @Valid TaskCreationRequestDTO taskCreationRequestDTO,
+            @RequestBody @Valid TaskRequestDTO taskRequestDTO,
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
         Task task = taskService.findById(id, userPrincipal.getId()).orElse(null);
@@ -122,8 +148,8 @@ public class TaskController {
         if (task == null)
             return ResponseEntity.notFound().build();
 
-        task.setTitle(taskCreationRequestDTO.title());
-        task.setDescription(taskCreationRequestDTO.description());
+        task.setTitle(taskRequestDTO.title());
+        task.setDescription(taskRequestDTO.description());
 
         task = taskService.update(task);
 
