@@ -8,6 +8,7 @@ import com.github.FerreirinhaJean.ToDo_App.exception.BusinessException;
 import com.github.FerreirinhaJean.ToDo_App.repository.TaskRepository;
 import com.github.FerreirinhaJean.ToDo_App.repository.specs.TaskSpecification;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepository;
@@ -52,6 +54,7 @@ public class TaskService {
         try {
             return taskRepository.findByIdAndUserId(UUID.fromString(id), userId);
         } catch (IllegalArgumentException illegalArgumentException) {
+            log.warn("Error has occurred in findById method: {}", illegalArgumentException.getMessage());
             return Optional.empty();
         }
     }
