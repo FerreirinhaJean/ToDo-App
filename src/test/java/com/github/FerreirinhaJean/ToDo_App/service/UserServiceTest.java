@@ -58,7 +58,6 @@ public class UserServiceTest {
         assertEquals(userCreated.getId(), user.getId());
 
         Mockito.verify(userRepository).save(Mockito.any());
-
     }
 
     @Test
@@ -74,5 +73,6 @@ public class UserServiceTest {
         assertEquals("Email already is used.", exception.getMessage());
 
         Mockito.verify(userRepository).existsByEmail("aegon.targaryen@gmail.com");
+        Mockito.verify(userRepository, Mockito.never()).save(Mockito.any());
     }
 }
