@@ -1,0 +1,35 @@
+name: todo-app
+
+services:
+
+  database:
+    image: postgres:16
+    container_name: todo-app-database
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=todo-app
+      - PGUSER=postgres
+    ports:
+      - "5432:5432"
+
+  application:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: todo-app-service
+    image: todo-app-service:latest
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://database:5432/todo-app
+      DB_USER: admin
+      DB_PASSWORD: admin
+    depends_on:
+      - database
+
+volumes:
+  postgres_volume:
+    name: todo-app-db-volume
